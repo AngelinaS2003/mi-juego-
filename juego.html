@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ANGELINA SUPERVIVIENTE - CIUDAD</title>
+<style>
+:root{
+  --panel:rgba(8,24,32,.92);--cream:#fff8df;--gold:#ffd45c;--pink:#f64d87;--pink-dark:#bd255c;--mint:#71e6ad;--border:rgba(255,255,255,.2);--shadow:0 8px 0 rgba(4,12,17,.55),0 18px 45px rgba(0,0,0,.28)
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#071a24;color:var(--cream);font-family:"Trebuchet MS",Arial,sans-serif}
+body{touch-action:none;overscroll-behavior:none}button{font:inherit}canvas{display:block;width:100vw;height:100vh;image-rendering:pixelated;image-rendering:crisp-edges}
+#hud{position:fixed;inset:0;z-index:5;pointer-events:none;text-shadow:2px 2px 0 rgba(0,0,0,.65)}
+#top{position:absolute;top:max(12px,env(safe-area-inset-top));left:max(14px,env(safe-area-inset-left));right:max(14px,env(safe-area-inset-right));display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.level-chip,.stats{background:var(--panel);border:2px solid var(--border);box-shadow:0 5px 0 rgba(2,10,14,.48);backdrop-filter:blur(8px)}
+.level-chip{min-width:180px;padding:9px 13px;border-left:5px solid var(--gold);border-radius:7px}.eyebrow,.stat small{display:block;font-family:"Courier New",monospace;font-size:9px;font-weight:900;letter-spacing:1.4px;color:#b7d8dc}
+#lvl{display:block;margin-top:2px;font:900 clamp(12px,1.6vw,16px)/1.2 "Courier New",monospace;color:#fff}.stats{display:flex;border-radius:7px;overflow:hidden}
+.stat{min-width:92px;display:flex;align-items:center;gap:8px;padding:8px 11px;border-left:1px solid rgba(255,255,255,.12)}.stat:first-child{border-left:0}
+.stat-icon{width:25px;height:25px;display:grid;place-items:center;border:2px solid currentColor;border-radius:5px;font:bold 16px/1 "Courier New",monospace;color:var(--gold)}
+.stat-life .stat-icon{color:#ff6a78}.stat-score .stat-icon{color:#79e6ff}.stat-items .stat-icon{color:#77e5a4}.stat-energy .stat-icon{color:#ffd45c}.stat strong{display:block;font:900 16px/1 "Courier New",monospace;color:#fff;margin-top:3px}
+#hint{position:absolute;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);max-width:calc(100vw - 28px);white-space:nowrap;background:rgba(5,18,24,.82);border:1px solid var(--border);padding:8px 13px;border-radius:6px;font:700 11px/1.3 "Courier New",monospace;color:#f5f9ed}.mobile-hint{display:none}
+.icon-button{position:absolute;top:92px;right:max(14px,env(safe-area-inset-right));width:42px;height:42px;padding:0;border:2px solid rgba(255,255,255,.35);border-radius:6px;background:var(--panel);color:#fff;font-weight:900;pointer-events:auto;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.4)}
+.icon-button:hover{background:#163e49}.icon-button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.4)}
+#intro{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:22px;background:linear-gradient(110deg,rgba(3,17,24,.93),rgba(8,31,37,.72));overflow:auto;touch-action:pan-y}
+#box{position:relative;width:min(880px,100%);margin:auto;padding:clamp(24px,4vw,42px);text-align:left;color:#fff;background:linear-gradient(145deg,rgba(8,27,34,.98),rgba(12,44,48,.96));border:3px solid var(--gold);border-radius:10px;box-shadow:var(--shadow);overflow:hidden}
+#box::before{content:"";position:absolute;inset:8px;pointer-events:none;border:1px dashed rgba(255,255,255,.16);border-radius:5px}.kicker{position:relative;display:inline-block;padding:6px 9px;background:var(--pink);font:900 10px/1 "Courier New",monospace;letter-spacing:1.5px;box-shadow:4px 4px 0 var(--pink-dark)}
+h1{position:relative;margin:18px 0 12px;font:900 clamp(38px,7vw,76px)/.88 "Courier New",monospace;letter-spacing:-4px;color:var(--cream);text-shadow:5px 5px 0 #123d43}h1 span{color:var(--gold)}
+.lead{position:relative;max-width:680px;margin:0;color:#d8edef;font-size:clamp(15px,2vw,19px);line-height:1.55}.purpose-grid{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:25px 0 22px}
+.purpose-grid article{position:relative;min-height:142px;padding:17px 18px 16px 56px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.13);border-radius:7px}.purpose-grid h2{margin:0 0 7px;font:900 18px/1 "Courier New",monospace;text-transform:uppercase;color:var(--gold)}.purpose-grid p{margin:0;color:#d7e6e6;font-size:13px;line-height:1.48}.purpose-number{position:absolute;top:17px;left:15px;font:900 13px/1 "Courier New",monospace;color:var(--mint)}
+.start-actions{position:relative;display:flex;gap:10px;flex-wrap:wrap}.primary-button,.secondary-button,#box button{min-height:48px;border:0;border-radius:6px;padding:13px 19px;font:900 13px/1.1 "Courier New",monospace;letter-spacing:.4px;cursor:pointer;transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}.primary-button,#box button:first-of-type{color:#fff;background:var(--pink);box-shadow:0 5px 0 var(--pink-dark)}.secondary-button{color:#fff;background:#173e47;border:2px solid rgba(255,255,255,.25);box-shadow:0 5px 0 #082329}.primary-button:hover,.secondary-button:hover,#box button:hover{filter:brightness(1.12)}.primary-button:active,.secondary-button:active,#box button:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.4)}button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+#controls-help{position:relative;margin-top:16px;padding:12px 14px;border-left:4px solid var(--mint);background:rgba(113,230,173,.09);font-size:13px;line-height:1.5;color:#dff9ec}.result-label{display:inline-block;color:var(--mint);font:900 11px/1 "Courier New",monospace;letter-spacing:1.5px}.result-score{display:flex;gap:10px;margin:22px 0;flex-wrap:wrap}.result-score span{min-width:120px;padding:12px;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:6px}.result-score small{display:block;color:#b7d8dc;font:900 9px/1 "Courier New",monospace;letter-spacing:1px}.result-score strong{display:block;margin-top:7px;color:var(--gold);font:900 22px/1 "Courier New",monospace}
+#touch-controls{position:fixed;z-index:10;left:max(13px,env(safe-area-inset-left));right:max(13px,env(safe-area-inset-right));bottom:max(17px,env(safe-area-inset-bottom));display:none;justify-content:space-between;align-items:flex-end;pointer-events:none}.touch-cluster{display:flex;align-items:flex-end;gap:9px;pointer-events:auto}
+#touch-controls button{display:grid;place-items:center;min-width:58px;height:58px;padding:5px;border:2px solid rgba(255,255,255,.48);border-radius:9px;color:#fff;background:rgba(8,29,36,.84);box-shadow:0 5px 0 rgba(0,0,0,.5);font:900 21px/1 "Courier New",monospace;user-select:none;-webkit-user-select:none}#touch-controls button.is-pressed{transform:translateY(4px);background:#205964;box-shadow:0 1px 0 rgba(0,0,0,.5)}#touch-controls .touch-secondary,#touch-controls .touch-attack{min-width:63px;height:48px;font-size:9px}#touch-controls .touch-attack{background:rgba(190,37,93,.9)}#touch-controls .touch-jump{background:rgba(230,153,44,.9)}
+#interact-button{position:fixed;z-index:12;left:50%;bottom:96px;transform:translateX(-50%);min-width:126px;padding:11px 15px;border:2px solid #fff4b0;border-radius:7px;color:#102027;background:#ffd45c;box-shadow:0 5px 0 #a76b18;font:900 11px/1 "Courier New",monospace;cursor:pointer;touch-action:manipulation}#interact-button:active{transform:translate(-50%,4px);box-shadow:0 1px 0 #a76b18}#interact-button[hidden]{display:none!important}
+@media (max-width:820px),(pointer:coarse){#touch-controls{display:flex}#hint{bottom:86px}.desktop-hint{display:none}.mobile-hint{display:inline}#top{gap:8px}.level-chip{min-width:0;max-width:38vw;padding:8px 9px}.eyebrow{font-size:7px;letter-spacing:.8px}#lvl{font-size:10px}.stats{flex:1;justify-content:flex-end}.stat{min-width:0;flex:1;justify-content:center;padding:7px 5px;gap:4px}.stat-icon{width:20px;height:20px;font-size:12px}.stat small{font-size:6px;letter-spacing:.5px}.stat strong{font-size:12px}.icon-button{top:72px;width:36px;height:36px}}
+@media (max-width:620px){#intro{align-items:flex-start;padding:12px}#box{padding:24px 19px;margin:auto}h1{letter-spacing:-2px}.purpose-grid{grid-template-columns:1fr;margin:18px 0}.purpose-grid article{min-height:0;padding:14px 14px 14px 49px}.purpose-grid p{font-size:12px}.start-actions{display:grid}.primary-button,.secondary-button,#box button{width:100%}#top{display:grid;grid-template-columns:1fr}.level-chip{max-width:none;width:100%}.stats{width:100%}.stat{padding-inline:3px}}
+@media (max-width:420px){#top{left:8px;right:8px}.level-chip{max-width:none}.stats{min-width:0;width:100%}.stat{min-width:0;overflow:hidden;gap:3px}.stat small{display:none}.stat>span:last-child{min-width:0}.stat strong{font-size:11px;margin-top:0}#touch-controls{left:10px;right:10px}.touch-cluster{gap:6px}#touch-controls button{width:48px;min-width:48px;height:52px}#touch-controls .touch-secondary,#touch-controls .touch-attack{width:52px;min-width:52px}}
+@media (max-height:560px) and (orientation:landscape){#intro{padding:8px}#box{width:min(920px,98vw);padding:16px 22px}.kicker{font-size:8px}h1{margin:9px 0 7px;font-size:35px;letter-spacing:-2px}.lead{font-size:12px;line-height:1.3}.purpose-grid{margin:10px 0;gap:8px}.purpose-grid article{min-height:74px;padding:10px 12px 9px 45px}.purpose-grid h2{font-size:13px}.purpose-grid p{font-size:10px;line-height:1.25}.purpose-number{top:11px;left:11px}.primary-button,.secondary-button,#box button{min-height:38px;padding:8px 13px;font-size:10px}#hint{display:none}#touch-controls{bottom:8px}#touch-controls button{width:50px;min-width:50px;height:50px}.icon-button{top:61px}.level-chip{padding:5px 8px}.stats .stat{padding-top:5px;padding-bottom:5px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud" aria-live="polite">
+  <div id="top">
+    <div class="level-chip"><span class="eyebrow">ZONA ACTUAL</span><strong id="lvl">Nivel 1 · Plaza Central</strong></div>
+    <div class="stats" aria-label="Estado de la partida">
+      <div class="stat stat-life"><span class="stat-icon" aria-hidden="true">♥</span><span><small>VIDAS</small><strong id="hp">5</strong></span></div>
+      <div class="stat stat-score"><span class="stat-icon" aria-hidden="true">◆</span><span><small>PUNTAJE</small><strong id="score">0</strong></span></div>
+      <div class="stat stat-items"><span class="stat-icon" aria-hidden="true">$</span><span><small>OBJETOS</small><strong id="cash">0</strong></span></div>
+      <div class="stat stat-energy"><span class="stat-icon" aria-hidden="true">↯</span><span><small>ENERGÍA</small><strong id="power">100</strong></span></div>
+    </div>
+  </div>
+  <button id="pause" class="icon-button" type="button" aria-label="Pausar juego">Ⅱ</button>
+  <div id="hint"><span class="desktop-hint">Mover: A/D o ←/→ · Doble salto: ESPACIO ×2 · Entrar: E/↓ · Volar: F · Atacar: X</span><span class="mobile-hint">Usa los controles para avanzar</span></div>
+</div>
+<div id="touch-controls" aria-label="Controles táctiles">
+  <div class="touch-cluster movement-controls"><button type="button" data-key="arrowleft" aria-label="Mover a la izquierda">←</button><button type="button" data-key="arrowright" aria-label="Mover a la derecha">→</button></div>
+  <div class="touch-cluster action-controls"><button type="button" data-key="f" class="touch-secondary" aria-label="Volar">VOLAR</button><button type="button" data-key=" " class="touch-jump" aria-label="Saltar">↑</button><button type="button" data-key="x" class="touch-attack" aria-label="Atacar">GOLPE</button></div>
+</div>
+<button id="interact-button" type="button" hidden>ENTRAR</button>
+<div id="intro" role="dialog" aria-modal="true" aria-labelledby="game-title">
+  <div id="box" class="start-panel">
+    <span class="kicker">AVENTURA URBANA · PIXEL EDITION</span>
+    <h1 id="game-title">ENTRE EL SOL<br><span>Y LA LUNA</span></h1>
+    <p class="lead">Recorre Iquitos, supera desafíos y llega al Instituto Pedro A. del Águila Hidalgo.</p>
+    <div class="purpose-grid">
+      <article><span class="purpose-number">01</span><h2>Visión</h2><p>Ser un juego dinámico, colorido y divertido que combine exploración urbana y superación de obstáculos en celular y computadora.</p></article>
+      <article><span class="purpose-number">02</span><h2>Misión</h2><p>Guiar a Angelina a través de diferentes zonas y niveles de la ciudad, ayudándola a esquivar peligros y recolectar objetos especiales para completar con éxito su aventura urbana.</p></article>
+    </div>
+    <div class="start-actions"><button id="go" class="primary-button" type="button">COMENZAR AVENTURA <span aria-hidden="true">→</span></button><button id="how" class="secondary-button" type="button">VER CONTROLES</button></div>
+    <div id="controls-help" hidden><strong>Tu objetivo:</strong> usa el doble salto, recoge ayudas, entra a los bancos con E o ↓, escapa de la alarma y llega a la casa segura.</div>
+  </div>
+</div>
+<script>
+// ================================================================
+// ANGELINA SUPERVIVIENTE - VERSIÓN CIUDAD
+// Juego 2D en un solo archivo HTML.
+// El código está comentado para facilitar el aprendizaje.
+// ================================================================
+
+const c=document.getElementById("game");                 // Canvas principal.
+const ctx=c.getContext("2d");                            // Contexto de dibujo.
+function fit(){c.width=innerWidth*devicePixelRatio;c.height=innerHeight*devicePixelRatio;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0)}
+addEventListener("resize",fit);fit();                    // Ajusta el juego a toda la pantalla.
+
+const keys={};                                           // Estado del teclado.
+addEventListener("keydown",e=>{keys[e.key.toLowerCase()]=true;if([" ","arrowleft","arrowright"].includes(e.key.toLowerCase()))e.preventDefault()});
+addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+
+const sheet=new Image();                                 // Lámina de sprites enviada por el usuario.
+sheet.src="assets/sprites-personaje.png";
+
+// Coordenadas de varios cuadros de animación del personaje.
+const frames={
+ idle:[[18,55,75,165],[111,55,75,165],[206,55,75,165],[302,55,75,165]],
+ walk:[[406,52,90,170],[510,52,90,170],[610,52,90,170],[706,52,90,170],[804,52,90,170]],
+ run:[[960,52,106,170],[1094,52,101,170],[1224,52,93,170],[1339,52,95,170]],
+ jump:[[15,312,95,145],[110,312,95,145],[210,262,100,195],[320,262,105,195]],
+ attack:[[450,538,110,165],[570,538,110,165],[690,538,110,165],[800,538,120,165]]
+};
+
+const world={length:24000,camera:0};                     // Tres recorridos largos de 8000 px cada uno.
+const p={x:160,y:0,w:80,h:166,vx:0,vy:0,hp:5,fly:100,ground:false,face:1,anim:"idle",frame:0,t:0,inv:0,attack:0};
+const mascotSprite=new Image();mascotSprite.src="assets/mascota-loro.png";
+const mascot={x:95,y:0,w:68,h:68};
+let bills=[],boxes=[],blocks=[],bad=[],spark=[],playing=false,time=0,jumpReady=true,jumpsUsed=0;
+let pitHoles=[]; // Huecos en la avenida: hay que saltarlos para no caer.
+
+// Función de choque entre rectángulos.
+function hit(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
+function ground(){return innerHeight-98}
+const random=(a,b)=>Math.random()*(b-a)+a;
+
+// Crea todos los elementos del recorrido.
+function build(){
+ bills=[];boxes=[];blocks=[];bad=[];spark=[];world.camera=0;
+ p.x=160;p.y=ground()-p.h;p.vx=0;p.vy=0;p.hp=5;p.fly=100;
+ mascot.x=p.x-64;mascot.y=p.y+18;
+ for(let x=500;x<world.length-300;x+=random(160,250))
+   bills.push({x,y:ground()-random(105,260),w:35,h:18,bob:Math.random()*6});
+ for(let x=900;x<world.length-400;x+=950)
+   boxes.push({x,y:ground()-52,w:48,h:48});
+ // Pocos conos, colocados con amplias zonas de carrera y aterrizaje entre ellos.
+ for(const x of [720,2200,4300,6500,7700])
+   blocks.push({x,y:ground()-62,w:82,h:62});
+ // Los perseguidores tambien aparecen separados para no encerrar al jugador.
+ for(const x of [1050,2750,4750,6000,7900])
+   bad.push({x,y:ground()-144,w:78,h:144,hp:3,dead:false,cool:0,hit:0});
+  pitHoles=[];
+   for(const x of [1380,3200,5200,7000]){
+     if(x<world.length-500)pitHoles.push({x,w:132,depth:24});
+  }
+ document.getElementById("hp").textContent=5;
+ document.getElementById("cash").textContent=0;
+}
+
+// Dinero recogido.
+let cash=0;
+
+// Partículas visuales.
+function burst(x,y,col,n=10){for(let i=0;i<n;i++)spark.push({x,y,vx:random(-160,160),vy:random(-170,50),life:random(.35,.9),col})}
+
+// Dibuja una ciudad moderna durante el día.
+function city(){
+ const W=innerWidth,H=innerHeight;
+ let sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,"#3ab5e7");sky.addColorStop(.6,"#bcecf7");sky.addColorStop(1,"#f8d7a2");ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+ ctx.fillStyle="#fff0a6";ctx.beginPath();ctx.arc(W*.78,85,47,0,Math.PI*2);ctx.fill();
+
+ // Edificios: se desplazan lentamente para dar profundidad.
+ let far=-(world.camera*.18)%170;
+ for(let i=-1;i<12;i++){
+   let x=far+i*170,h=130+(i%5)*55,w=105+(i%3)*22;
+   ctx.fillStyle=["#7999ad","#b4b8b2","#d49b73","#8b9eaf"][i%4];ctx.fillRect(x,H-98-h,w,h);
+   ctx.fillStyle="#dff4ff";
+   for(let yy=H-85-h;yy<H-115;yy+=27)for(let xx=x+12;xx<x+w-10;xx+=24)ctx.fillRect(xx,yy,11,14);
+ }
+ let near=-(world.camera*.48)%340;
+ for(let i=-1;i<7;i++){
+   let x=near+i*340;
+   ctx.fillStyle=["#3b5268","#566475","#9a765f"][i%3];ctx.fillRect(x,H-330,180,232);
+   ctx.fillStyle="#77c9ea";for(let yy=H-305;yy<H-120;yy+=32){for(let xx=x+18;xx<x+160;xx+=34)ctx.fillRect(xx,yy,19,20)}
+   ctx.fillStyle="#f3c95f";ctx.fillRect(x+12,H-345,155,26);ctx.fillStyle="#273343";ctx.font="bold 16px Arial";ctx.fillText(i%2?"CITY":"AVENIDA",x+45,H-326);
+ }
+ // Árboles y faroles.
+ let street=-(world.camera*.75)%160;
+ for(let x=street-100;x<W+160;x+=160){
+   ctx.fillStyle="#67574b";ctx.fillRect(x,H-182,9,84);
+   ctx.fillStyle="#4f9c59";ctx.beginPath();ctx.arc(x+4,H-194,32,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle="#42474e";ctx.fillRect(x+62,H-235,5,137);ctx.fillStyle="#ffe69b";ctx.beginPath();ctx.arc(x+64,H-240,10,0,Math.PI*2);ctx.fill();
+ }
+ // Vereda y avenida.
+ ctx.fillStyle="#c8c4bc";ctx.fillRect(0,H-118,W,20);ctx.fillStyle="#4c5158";ctx.fillRect(0,H-98,W,98);
+ ctx.strokeStyle="#ffe372";ctx.lineWidth=6;ctx.setLineDash([42,30]);ctx.beginPath();ctx.moveTo(0,H-45);ctx.lineTo(W,H-45);ctx.stroke();ctx.setLineDash([]);
+}
+
+// Dibuja los billetes.
+function drawBills(){
+ for(const o of bills){let x=o.x-world.camera;if(x<-60||x>innerWidth+60)continue;let y=o.y+Math.sin(time*4+o.bob)*6;ctx.save();ctx.translate(x+17,y+9);ctx.rotate(Math.sin(time*3+o.bob)*.16);ctx.fillStyle="#59b95d";ctx.fillRect(-17,-9,34,18);ctx.strokeStyle="#edffd9";ctx.strokeRect(-17,-9,34,18);ctx.fillStyle="#184d28";ctx.font="bold 12px Arial";ctx.fillText("$",-4,5);ctx.restore()}
+}
+
+// Dibuja cajas de poderes.
+function drawBoxes(){
+ for(const o of boxes){let x=o.x-world.camera;if(x<-60||x>innerWidth+60)continue;ctx.fillStyle="#8c4cff";ctx.fillRect(x,o.y,o.w,o.h);ctx.fillStyle="#ffce4e";ctx.fillRect(x,o.y,o.w,12);ctx.fillStyle="#fff";ctx.font="bold 25px Arial";ctx.fillText("★",x+12,o.y+39)}
+}
+
+// Dibuja barreras.
+function drawBlocks(){
+ // Los antiguos obstáculos cuadrados ahora son conos de tránsito.
+ for(const o of blocks){
+   let x=o.x-world.camera;
+   if(x<-130||x>innerWidth+130)continue;
+   const baseY=o.y+o.h;
+   const coneW=Math.max(34,Math.min(54,o.w*.55));
+   const coneH=Math.max(42,Math.min(72,o.h));
+   const cx=x+o.w/2;
+   ctx.save();
+   ctx.fillStyle="rgba(0,0,0,.22)";
+   ctx.beginPath();ctx.ellipse(cx,baseY+2,coneW*.72,5,0,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle="#f47a22";
+   ctx.beginPath();ctx.moveTo(cx,baseY-coneH);ctx.lineTo(cx+coneW/2,baseY);ctx.lineTo(cx-coneW/2,baseY);ctx.closePath();ctx.fill();
+   ctx.fillStyle="#fff4dc";
+   ctx.beginPath();ctx.moveTo(cx- coneW*.23,baseY-coneH*.48);ctx.lineTo(cx+coneW*.23,baseY-coneH*.48);ctx.lineTo(cx+coneW*.34,baseY-coneH*.31);ctx.lineTo(cx-coneW*.34,baseY-coneH*.31);ctx.closePath();ctx.fill();
+   ctx.fillStyle="#d85b18";ctx.fillRect(cx-coneW*.62,baseY-5,coneW*1.24,7);
+   ctx.restore();
+ }
+}
+
+// Dibuja a Angelina usando directamente el sprite limpio.
+function drawPlayer(){
+ const list=frames[p.anim]||frames.idle,fr=list[Math.floor(p.frame)%list.length],[sx,sy,sw,sh]=fr;
+ const runBob=p.anim==="run"&&p.ground?Math.sin(time*18)*1.5:0;
+ ctx.save();ctx.translate(Math.round(p.x-world.camera+p.w/2),Math.round(p.y+p.h/2+runBob));
+ if(p.face<0)ctx.scale(-1,1);
+ if(p.attack>0){ctx.fillStyle="rgba(255,82,171,.18)";ctx.beginPath();ctx.arc(20,0,60,0,Math.PI*2);ctx.fill()}
+ ctx.globalAlpha=1;ctx.imageSmoothingEnabled=false;
+ ctx.drawImage(sheet,sx,sy,sw,sh,-p.w/2,-p.h/2,p.w,p.h);ctx.restore();
+}
+
+// Mascota: vuela junto a Angelina y cambia de lado con su movimiento.
+function updateMascot(dt){
+ const targetX=p.face>0?p.x-66:p.x+p.w+66;
+ const targetY=p.y+25+Math.sin(time*5.5)*8;
+ const follow=Math.min(1,dt*7.5);
+ mascot.x+=(targetX-mascot.x)*follow;
+ mascot.y+=(targetY-mascot.y)*follow;
+}
+function drawMascot(){
+ if(!mascotSprite.complete||!mascotSprite.naturalWidth)return;
+ const x=mascot.x-world.camera,y=mascot.y;
+ if(x<-100||x>innerWidth+100)return;
+ const flap=1+Math.sin(time*11)*.055;
+ ctx.save();ctx.translate(Math.round(x),Math.round(y));
+ ctx.rotate(Math.sin(time*5.5)*.045);
+ ctx.scale(p.face>0?-1:1,flap);
+ ctx.imageSmoothingEnabled=true;
+ ctx.drawImage(mascotSprite,-mascot.w/2,-mascot.h/2,mascot.w,mascot.h);
+ ctx.restore();
+}
+
+// Dibuja atacantes.
+function drawEnemies(){
+ for(const e of bad){if(e.dead)continue;let x=e.x-world.camera;if(x<-100||x>innerWidth+100)continue;
+ ctx.save();ctx.translate(x+29,e.y+55);
+ ctx.fillStyle="rgba(0,0,0,.25)";ctx.beginPath();ctx.ellipse(0,51,30,7,0,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle=e.hit>0?"#ff9d9d":"#8b5a43";ctx.beginPath();ctx.arc(0,-37,20,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle="#242936";ctx.fillRect(-23,-18,46,53);ctx.fillStyle="#19202a";ctx.fillRect(-20,33,16,34);ctx.fillRect(4,33,16,34);
+ ctx.strokeStyle="#8b5a43";ctx.lineWidth=11;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-20,-7);ctx.lineTo(-40,-1);ctx.moveTo(20,-7);ctx.lineTo(40+(e.cool>.1?14:0),3);ctx.stroke();
+ ctx.fillStyle="#14171b";ctx.fillRect(-23,-59,46,14);ctx.restore();
+ }
+}
+
+// Ataque de Angelina.
+function attack(){
+ if(p.attack>0)return;p.attack=.35;p.anim="attack";
+ let zone={x:p.x+(p.face>0?p.w-5:-50),y:p.y+18,w:55,h:75};
+ for(const e of bad)if(!e.dead&&hit(zone,e)){e.hp--;e.hit=.2;e.x+=p.face*50;burst(e.x+30,e.y+45,"#ff4e9b",14);if(e.hp<=0){e.dead=true;burst(e.x+30,e.y+40,"#ffd35f",24)}}
+}
+
+// Actualiza la lógica.
+function update(dt){
+ p.inv=Math.max(0,p.inv-dt);p.attack=Math.max(0,p.attack-dt);
+ let L=keys["a"]||keys["arrowleft"],R=keys["d"]||keys["arrowright"];
+ p.vx=L?-300:R?300:0;if(L)p.face=-1;if(R)p.face=1;p.x=Math.max(0,p.x+p.vx*dt);
+
+ let J=keys[" "]||keys["arrowup"]||keys["w"];
+ if(J&&jumpReady&&(p.ground||jumpsUsed<2)){p.vy=p.ground?-860:-710;p.ground=false;jumpReady=false;jumpsUsed++;burst(p.x+p.w/2,p.y+p.h,"#79e6ff",jumpsUsed===2?12:6)}
+ if(!J)jumpReady=true;
+
+ let flying=keys["f"]&&p.fly>0;
+ if(flying){p.vy-=760*dt;p.fly=Math.max(0,p.fly-28*dt)}else p.fly=Math.min(100,p.fly+9*dt);
+ p.vy+=(flying?500:1600)*dt;p.y+=p.vy*dt;
+  const overPit=pitHoles.some(h=>p.x+p.w*.72>h.x&&p.x+p.w*.28<h.x+h.w);
+  if(p.y+p.h>=ground()&&!overPit){p.y=ground()-p.h;p.vy=0;p.ground=true;jumpsUsed=0}else p.ground=false;
+  if(overPit&&p.y>ground()+125){lose();return;}
+
+ if(keys["x"])attack();
+ const nextAnim=!p.ground?"jump":p.attack>0?"attack":Math.abs(p.vx)>0?"run":"idle";
+ if(nextAnim!==p.anim){p.anim=nextAnim;p.frame=0;p.t=0;}
+ const frameDelay=p.anim==="run"?.085:p.anim==="idle"?.18:.12;
+ p.t+=dt;while(p.t>=frameDelay){p.frame++;p.t-=frameDelay;}
+ updateMascot(dt);
+
+ // Recoger billetes.
+ for(const o of bills)if(!o.dead&&hit(p,{x:o.x,y:o.y,w:o.w,h:o.h})){o.dead=true;cash++;burst(o.x,o.y,"#64d368",9)}
+ bills=bills.filter(o=>!o.dead);
+
+ // Recoger poderes.
+ for(const o of boxes)if(!o.dead&&hit(p,o)){o.dead=true;p.fly=100;burst(o.x+24,o.y+24,"#a95bff",18)}
+ boxes=boxes.filter(o=>!o.dead);
+
+ // Chocar con obstáculos.
+ for(const o of blocks)if(hit(p,o)&&p.vy>=0&&p.y+p.h-o.y<30){p.x=o.x-p.w}
+
+ // Movimiento y ataques enemigos.
+ for(const e of bad){if(e.dead)continue;e.cool=Math.max(0,e.cool-dt);e.hit=Math.max(0,e.hit-dt);let d=p.x-e.x;if(Math.abs(d)<560)e.x+=Math.sign(d)*75*dt;
+   // Cajas de daño más pequeñas que los sprites: saltar por encima no cuenta como contacto.
+   const playerHurtbox={x:p.x+19,y:p.y+20,w:p.w-38,h:p.h-40};
+   const enemyHurtbox={x:e.x+12,y:e.y+14,w:e.w-24,h:e.h-20};
+   if(hit(playerHurtbox,enemyHurtbox)&&p.inv<=0){p.hp--;p.inv=1.05;e.cool=.35;burst(p.x+35,p.y+45,"#ff4747",16);if(p.hp<=0)lose()}
+ }
+
+ // Llegada a la casa.
+ if(p.x>world.length-260)win();
+ world.camera=Math.max(0,p.x-innerWidth*.32);
+ document.getElementById("hp").textContent=p.hp;document.getElementById("cash").textContent=cash;document.getElementById("power").textContent=Math.round(p.fly);
+}
+
+// Mensaje de derrota.
+function lose(){playing=false;document.getElementById("intro").style.display="flex";document.getElementById("box").innerHTML="<h1>¡INTÉNTALO OTRA VEZ!</h1><p>Angelina fue detenida antes de llegar a la casa.</p><button onclick='restart()'>REINTENTAR</button>"}
+
+// Mensaje final.
+function win(){playing=false;document.getElementById("intro").style.display="flex";document.getElementById("box").innerHTML="<h1>¡ANGELINA LLEGÓ A CASA! 🏠</h1><p>Superaste la aventura por la ciudad y recogiste "+cash+" billetes.</p><button onclick='restart()'>JUGAR DE NUEVO</button>"}
+
+// Reinicia el juego.
+function restart(){cash=0;build();playing=true;document.getElementById("intro").style.display="none";if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(()=>{})}
+
+// Dibuja una casa como objetivo final.
+function drawHouse(){
+ let x=world.length-210-world.camera,y=ground()-245;if(x<-300||x>innerWidth+300)return;
+ ctx.fillStyle="#f0d2a5";ctx.fillRect(x+28,y+75,175,170);ctx.fillStyle="#bf5350";ctx.beginPath();ctx.moveTo(x,y+82);ctx.lineTo(x+115,y);ctx.lineTo(x+230,y+82);ctx.fill();
+ ctx.fillStyle="#70493c";ctx.fillRect(x+100,y+145,48,100);ctx.fillStyle="#7ecbe8";ctx.fillRect(x+48,y+125,36,40);ctx.fillRect(x+165,y+125,36,40);
+ ctx.fillStyle="#fff3b5";ctx.font="bold 20px Arial";ctx.fillText("CASA SEGURA",x+45,y-12);
+}
+
+// Bucle principal.
+let last=0;
+function loop(now){
+ requestAnimationFrame(loop);let dt=Math.min(.033,(now-last)/1000||0);last=now;time+=dt;
+ city();
+ if(playing)update(dt);
+ drawBlocks();drawBills();drawBoxes();drawHouse();drawEnemies();drawMascot();drawPlayer();
+ for(const s of spark){s.life-=dt;s.x+=s.vx*dt;s.y+=s.vy*dt;s.vy+=400*dt;ctx.globalAlpha=Math.max(0,s.life*1.3);ctx.fillStyle=s.col;ctx.fillRect(s.x-world.camera,s.y,5,5);ctx.globalAlpha=1}
+ spark=spark.filter(s=>s.life>0);
+}
+requestAnimationFrame(loop);
+
+// Botón inicial.
+document.getElementById("go").onclick=restart;
+</script>
+<script>
+"use strict";
+
+// Escenario de la plaza, HUD, dificultad, obstáculos móviles y controles táctiles.
+const plazaBackground=new Image();
+plazaBackground.src="assets/plaza-28-pixel.png";
+const reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let gameScore=0;
+let gameLevel=1;
+let collectedSpecials=0;
+let paused=false;
+let mobileObstacles=[];
+let specialItems=[];
+let worldGroundY=ground();
+
+fit=function(){
+  const ratio=Math.min(window.devicePixelRatio||1,1.75);
+  c.width=Math.round(innerWidth*ratio);c.height=Math.round(innerHeight*ratio);
+  c.style.width=innerWidth+"px";c.style.height=innerHeight+"px";
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+};
+addEventListener("resize",fit,{passive:true});
+fit();
+
+// La foto de la plaza convertida a pixel art reemplaza los edificios genéricos.
+city=function(){
+  const W=innerWidth,H=innerHeight;
+  ctx.fillStyle="#6dd3ff";ctx.fillRect(0,0,W,H);
+  if(plazaBackground.complete&&plazaBackground.naturalWidth){
+    const scale=Math.max(W/plazaBackground.naturalWidth,H/plazaBackground.naturalHeight);
+    const dw=plazaBackground.naturalWidth*scale,dh=plazaBackground.naturalHeight*scale;
+    const maxShift=Math.max(0,dw-W);
+    const progress=Math.min(1,Math.max(0,world.camera/Math.max(1,world.length-W)));
+    const x=-maxShift*(reduceMotion?.5:progress);
+    ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(plazaBackground,x,(H-dh)*.5,dw,dh);
+  }
+  const roadY=ground()-2;
+  ctx.fillStyle="rgba(46,57,62,.74)";ctx.fillRect(0,roadY,W,H-roadY);
+  ctx.fillStyle="rgba(255,255,255,.15)";ctx.fillRect(0,roadY,W,5);
+  ctx.fillStyle="#ffd45c";
+  const stripeOffset=-(world.camera*.8)%96;
+  for(let x=stripeOffset-96;x<W+96;x+=96)ctx.fillRect(Math.round(x),H-43,48,5);
+};
+
+const baseBuildEnhanced=build;
+build=function(){
+  baseBuildEnhanced();
+  gameScore=0;gameLevel=1;collectedSpecials=0;paused=false;
+  mobileObstacles=[];specialItems=[];
+  // Solo tres vehículos por recorrido, separados por más de 2 000 px.
+  // No se reciclan: así nunca aparecen varios seguidos frente a Angelina.
+  for(const x of [1900,4000,6200]){
+    if(x<world.length-350)mobileObstacles.push({x,w:220,h:96,vx:-random(72,88),cool:0,passed:false});
+  }
+  for(let x=820;x<world.length-350;x+=780)specialItems.push({x:x+random(-80,80),y:ground()-random(155,250),w:30,h:30,phase:random(0,6),dead:false});
+  worldGroundY=ground();
+  updateHudEnhanced();
+};
+
+// Conserva todos los elementos a la misma distancia del suelo cuando cambia
+// el alto de la ventana, se activa pantalla completa o gira el celular.
+function syncWorldGround(){
+  const nextGround=ground();
+  const delta=nextGround-worldGroundY;
+  if(!Number.isFinite(delta)||Math.abs(delta)<.5)return;
+  for(const collection of [bills,boxes,blocks,bad,specialItems,spark]){
+    for(const item of collection)if(Number.isFinite(item.y))item.y+=delta;
+  }
+  if(Number.isFinite(p.y))p.y+=delta;
+  worldGroundY=nextGround;
+}
+
+addEventListener("fullscreenchange",()=>requestAnimationFrame(syncWorldGround));
+
+function updateHudEnhanced(){
+  const levelNames=["Plaza Central","Avenida de las Palmeras","Instituto Pedro A. del Aguila"];
+  const scoreEl=document.getElementById("score");
+  if(scoreEl)scoreEl.textContent=Math.floor(gameScore).toLocaleString("es-PE");
+  const levelEl=document.getElementById("lvl");
+  if(levelEl)levelEl.textContent=`Nivel ${gameLevel} · ${levelNames[gameLevel-1]}`;
+}
+
+function drawSpecialItems(){
+  for(const item of specialItems){
+    if(item.dead)continue;
+    const x=item.x-world.camera;if(x<-50||x>innerWidth+50)continue;
+    const y=item.y+Math.sin(time*4+item.phase)*7;
+    ctx.save();ctx.translate(Math.round(x+15),Math.round(y+15));ctx.rotate(time*.9+item.phase);ctx.imageSmoothingEnabled=false;
+    ctx.fillStyle="#fff5aa";ctx.fillRect(-4,-15,8,30);ctx.fillRect(-15,-4,30,8);
+    ctx.fillStyle="#f64d87";ctx.fillRect(-9,-9,18,18);ctx.fillStyle="#fff";ctx.fillRect(-3,-3,6,6);ctx.restore();
+  }
+}
+
+function drawMobileObstacles(){
+  for(const car of mobileObstacles){
+    if(car.passed)continue;
+    // La altura se recalcula en cada cuadro para resistir giros y cambios de pantalla.
+    const x=Math.round(car.x-world.camera),y=Math.round(ground()-car.h);if(x<-150||x>innerWidth+150)continue;
+    ctx.save();ctx.translate(x,y);ctx.imageSmoothingEnabled=false;
+    ctx.fillStyle="#152a38";ctx.fillRect(12,13,77,34);ctx.fillRect(28,2,49,17);
+    ctx.fillStyle="#32a9db";ctx.fillRect(15,17,71,25);ctx.fillStyle="#9be8ff";ctx.fillRect(33,5,17,13);ctx.fillRect(54,5,18,13);
+    ctx.fillStyle="#f7c947";ctx.fillRect(4,34,12,8);ctx.fillRect(86,34,13,8);
+    ctx.fillStyle="#0c1117";ctx.fillRect(18,44,20,12);ctx.fillRect(69,44,20,12);ctx.fillStyle="#b8d2d8";ctx.fillRect(23,47,10,6);ctx.fillRect(74,47,10,6);
+    ctx.fillStyle="#fff";ctx.font="900 8px 'Courier New'";ctx.fillText("MOTO",39,39);ctx.restore();
+  }
+}
+
+const baseDrawBlocksEnhanced=drawBlocks;
+drawBlocks=function(){baseDrawBlocksEnhanced();drawMobileObstacles();};
+const baseDrawBoxesEnhanced=drawBoxes;
+drawBoxes=function(){baseDrawBoxesEnhanced();drawSpecialItems();};
+
+const baseUpdateEnhanced=update;
+update=function(dt){
+  syncWorldGround();
+  if(paused)return;
+  const cashBefore=cash,xBefore=p.x;
+  baseUpdateEnhanced(dt);
+  if(!playing)return;
+  const previousLevel=gameLevel;
+  gameLevel=Math.min(3,Math.floor((p.x/world.length)*3)+1);
+  if(gameLevel!==previousLevel){
+    showStatus(gameLevel===2?"META NIVEL 1 - COMIENZA LA NOCHE":"META NIVEL 2 - RUMBO AL TECNOLOGICO",3.4);
+    burst(p.x+p.w/2,p.y+30,"#ffd85a",28);
+  }
+  gameScore+=Math.max(0,p.x-xBefore)*.12;
+  if(cash>cashBefore)gameScore+=(cash-cashBefore)*100;
+  for(const item of specialItems){
+    if(!item.dead&&hit(p,item)){item.dead=true;collectedSpecials++;gameScore+=350;p.fly=Math.min(100,p.fly+35);burst(item.x+15,item.y+15,"#fff08a",18);}
+  }
+  for(const car of mobileObstacles){
+    if(car.passed)continue;
+    // Los autos de niveles posteriores esperan en su zona y no avanzan antes
+    // de que el jugador se aproxime a ellos.
+    if(!car.active&&world.camera<(car.spawnX??car.x)-innerWidth-520)continue;
+    car.active=true;
+    car.cool=Math.max(0,car.cool-dt);car.x+=car.vx*dt;
+    // Cuando pasa, sale definitivamente en vez de reaparecer de inmediato.
+    if(car.x+car.w<world.camera-280){car.passed=true;continue;}
+    const vehicleHitbox={x:car.x+10,y:ground()-car.h+9,w:car.w-20,h:car.h-9};
+    if(hit(p,vehicleHitbox)&&p.inv<=0&&car.cool<=0){
+      p.hp--;p.inv=1.15;car.cool=1.2;p.vx=-210;p.vy=-260;burst(p.x+p.w/2,p.y+p.h/2,"#ff6a78",22);
+      if(p.hp<=0)lose();
+    }
+  }
+  updateHudEnhanced();
+};
+
+function resultPanel(title,message,label){
+  return `<span class="result-label">${label}</span><h1>${title}</h1><p class="lead">${message}</p><div class="result-score"><span><small>PUNTAJE</small><strong>${Math.floor(gameScore).toLocaleString("es-PE")}</strong></span><span><small>OBJETOS</small><strong>${cash+collectedSpecials}</strong></span><span><small>NIVEL</small><strong>${gameLevel}</strong></span></div><button class="primary-button" onclick="restart()">JUGAR DE NUEVO <span aria-hidden="true">→</span></button>`;
+}
+
+lose=function(){
+  playing=false;paused=false;const intro=document.getElementById("intro");intro.style.display="flex";
+  document.getElementById("box").innerHTML=resultPanel("CASI LO LOGRAS","Angelina necesita otra oportunidad para superar los peligros de la ciudad.","FIN DE LA PARTIDA");
+};
+
+win=function(){
+  playing=false;paused=false;gameScore+=p.hp*250+collectedSpecials*100;const intro=document.getElementById("intro");intro.style.display="flex";
+  document.getElementById("box").innerHTML=resultPanel("¡MISIÓN CUMPLIDA!","Angelina llegó a la casa segura y completó su aventura urbana.","AVENTURA COMPLETADA");
+};
+
+const baseRestartEnhanced=restart;
+restart=function(){
+  baseRestartEnhanced();const pauseButton=document.getElementById("pause");pauseButton.textContent="Ⅱ";pauseButton.setAttribute("aria-label","Pausar juego");
+};
+
+document.getElementById("go").onclick=restart;
+document.getElementById("how").addEventListener("click",()=>{
+  const help=document.getElementById("controls-help");help.hidden=!help.hidden;
+  document.getElementById("how").textContent=help.hidden?"VER CONTROLES":"OCULTAR CONTROLES";
+});
+document.getElementById("pause").addEventListener("click",()=>{
+  if(!playing)return;paused=!paused;const button=document.getElementById("pause");button.textContent=paused?"▶":"Ⅱ";button.setAttribute("aria-label",paused?"Continuar juego":"Pausar juego");
+});
+for(const button of document.querySelectorAll("#touch-controls [data-key]")){
+  const key=button.dataset.key;
+  const press=event=>{event.preventDefault();keys[key]=true;button.classList.add("is-pressed");};
+  const release=event=>{event.preventDefault();keys[key]=false;button.classList.remove("is-pressed");};
+  button.addEventListener("pointerdown",press);button.addEventListener("pointerup",release);button.addEventListener("pointercancel",release);button.addEventListener("pointerleave",release);
+}
+addEventListener("blur",()=>{for(const key of Object.keys(keys))keys[key]=false;});
+
+// Acceso de prueba local: ?play=1 abre directamente la partida.
+const localTestParams=new URLSearchParams(location.search);
+if(localTestParams.has("play")||localTestParams.has("banktest"))setTimeout(restart,220);
+if(localTestParams.has("level3test")){
+  setTimeout(()=>{if(!playing)restart();p.x=world.length*.74;world.camera=Math.max(0,p.x-innerWidth*.32);},360);
+}
+if(localTestParams.has("testx")){
+  setTimeout(()=>{const testX=Number(localTestParams.get("testx"));if(Number.isFinite(testX)){p.x=Math.max(0,Math.min(world.length-300,testX));world.camera=Math.max(0,p.x-innerWidth*.32);}},360);
+}
+
+</script>
+<script>
+"use strict";
+
+// Recursos pixel-art creados para esta ampliación.
+const policeSprite=new Image();policeSprite.src="assets/policia-pixel.png";
+const patrolSprite=new Image();patrolSprite.src="assets/patrulla-pixel.png";
+const bankSprite=new Image();bankSprite.src="assets/banco-pixel.png";
+
+let banks=[];
+let helpItems=[];
+let bankVisit=null;
+let pendingPolice=[];
+let nearbyBank=null;
+let interactionLatch=false;
+let statusMessage="";
+let statusTimer=0;
+
+const interactButton=document.getElementById("interact-button");
+
+function showStatus(message,duration=2.4){statusMessage=message;statusTimer=duration;}
+function helpItemY(item){return ground()-item.offset;}
+function bankDoor(bank){return {x:bank.x+bank.w*.5-38,y:ground()-102,w:76,h:102};}
+
+function getNearbyBank(){
+  if(bankVisit)return null;
+  for(const bank of banks){
+    if(bank.visited)continue;
+    const door=bankDoor(bank),playerCenter=p.x+p.w/2,doorCenter=door.x+door.w/2;
+    if(Math.abs(playerCenter-doorCenter)<92&&p.y+p.h>ground()-32)return bank;
+  }
+  return null;
+}
+
+const buildBeforeFeatures=build;
+build=function(){
+  buildBeforeFeatures();
+  // Los policías aparecen como respuesta a la alarma, no antes.
+  bad=[];mobileObstacles=[];
+  banks=[
+    {x:2140,w:340,h:238,visited:false,alarm:false,alarmTimer:0},
+    {x:5000,w:340,h:238,visited:false,alarm:false,alarmTimer:0}
+  ];
+  // Mantiene libres las entradas: ningún obstáculo ni premio tapa las puertas.
+  const outsideBankEntrances=item=>!banks.some(bank=>item.x+(item.w||0)>bank.x-110&&item.x<bank.x+bank.w+110);
+  blocks=blocks.filter(outsideBankEntrances);boxes=boxes.filter(outsideBankEntrances);bills=bills.filter(outsideBankEntrances);specialItems=specialItems.filter(outsideBankEntrances);
+  const itemPlan=[
+    [1050,"heart",180],[1650,"shield",235],[2900,"energy",190],
+    [3700,"heart",225],[4550,"shield",185],[5900,"energy",235],[6800,"heart",190]
+  ];
+  helpItems=itemPlan.map(([x,type,offset],index)=>({x,y:0,w:34,h:34,type,offset,phase:index*.9,dead:false}));
+  bankVisit=null;pendingPolice=[];nearbyBank=null;interactionLatch=false;statusMessage="";statusTimer=0;
+  p.hidden=false;jumpsUsed=0;interactButton.hidden=true;
+};
+
+function drawBanks(){
+  for(const bank of banks){
+    const x=Math.round(bank.x-world.camera),y=Math.round(ground()-bank.h);
+    if(x<-bank.w-80||x>innerWidth+80)continue;
+    ctx.save();ctx.imageSmoothingEnabled=false;
+    if(bankSprite.complete&&bankSprite.naturalWidth){
+      ctx.drawImage(bankSprite,110,20,1320,970,x,y,bank.w,bank.h);
+    }else{
+      ctx.fillStyle="#f4d49f";ctx.fillRect(x,y,bank.w,bank.h);ctx.fillStyle="#133c68";ctx.fillRect(x+bank.w/2-38,y+bank.h-100,76,100);
+    }
+    const beaconX=x+bank.w/2,beaconY=y+bank.h*.55;
+    if(bank.alarm&&bank.alarmTimer>0){
+      const pulse=.55+Math.sin(time*16)*.35;
+      ctx.globalAlpha=pulse;ctx.fillStyle=Math.floor(time*6)%2?"#ff365d":"#4cbcff";ctx.beginPath();ctx.arc(beaconX,beaconY,18,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    }
+    if(!bank.visited&&nearbyBank===bank){
+      const labelY=y-34;ctx.fillStyle="rgba(6,24,31,.92)";ctx.fillRect(x+bank.w/2-83,labelY,166,27);ctx.strokeStyle="#ffd45c";ctx.strokeRect(x+bank.w/2-83,labelY,166,27);ctx.fillStyle="#fff";ctx.font="900 11px 'Courier New'";ctx.textAlign="center";ctx.fillText("E / ↓  ENTRAR",x+bank.w/2,labelY+18);ctx.textAlign="left";
+    }
+    ctx.restore();
+  }
+}
+
+function drawHelpItems(){
+  for(const item of helpItems){
+    if(item.dead)continue;
+    const x=item.x-world.camera,y=helpItemY(item)+Math.sin(time*4+item.phase)*6;
+    if(x<-50||x>innerWidth+50)continue;
+    ctx.save();ctx.translate(Math.round(x+17),Math.round(y+17));ctx.imageSmoothingEnabled=false;
+    ctx.fillStyle="rgba(4,20,28,.75)";ctx.fillRect(-18,-18,36,36);ctx.strokeStyle="#fff3ae";ctx.lineWidth=2;ctx.strokeRect(-18,-18,36,36);
+    if(item.type==="heart"){
+      ctx.fillStyle="#ff4f6f";ctx.fillRect(-11,-7,9,9);ctx.fillRect(2,-7,9,9);ctx.fillRect(-14,-3,28,8);ctx.fillRect(-10,5,20,6);ctx.fillRect(-5,11,10,4);
+    }else if(item.type==="shield"){
+      ctx.fillStyle="#62d7ff";ctx.beginPath();ctx.moveTo(0,-13);ctx.lineTo(12,-8);ctx.lineTo(9,8);ctx.lineTo(0,14);ctx.lineTo(-9,8);ctx.lineTo(-12,-8);ctx.closePath();ctx.fill();ctx.fillStyle="#fff";ctx.fillRect(-2,-8,4,15);
+    }else{
+      ctx.fillStyle="#ffd84d";ctx.fillRect(-9,-12,18,24);ctx.fillStyle="#fff";ctx.fillRect(-3,-16,6,5);ctx.fillStyle="#b56c18";ctx.fillRect(-3,-7,6,14);
+    }
+    ctx.restore();
+  }
+}
+
+// Patrullas más grandes, azul/blanco y apoyadas siempre sobre el pavimento.
+drawMobileObstacles=function(){
+  for(const car of mobileObstacles){
+    if(car.passed)continue;
+    const x=Math.round(car.x-world.camera),y=Math.round(ground()-car.h);
+    if(x<-car.w-80||x>innerWidth+120)continue;
+    ctx.save();ctx.translate(x,y);ctx.imageSmoothingEnabled=false;
+    if(patrolSprite.complete&&patrolSprite.naturalWidth)ctx.drawImage(patrolSprite,40,100,1690,740,0,0,car.w,car.h);
+    else{ctx.fillStyle="#1469d8";ctx.fillRect(0,18,car.w,car.h-18);ctx.fillStyle="#fff";ctx.fillRect(car.w*.35,18,car.w*.42,car.h-25);}
+    const flash=Math.floor(time*8)%2;ctx.fillStyle=flash?"#ff3155":"#3fbdff";ctx.globalAlpha=.82;ctx.fillRect(car.w*.45,2,car.w*.12,7);ctx.restore();
+  }
+};
+
+// Policías con la misma estética, proporción y rebote animado que Angelina.
+drawEnemies=function(){
+  for(const e of bad){
+    if(e.dead)continue;
+    const x=e.x-world.camera;if(x<-100||x>innerWidth+100)continue;
+    const direction=p.x<e.x?-1:1;
+    const bounce=reduceMotion?0:Math.sin(time*11+e.x*.015);
+    const scaleY=1+bounce*.018,scaleX=1-bounce*.009;
+    ctx.save();ctx.translate(Math.round(x+e.w/2),Math.round(e.y+e.h));ctx.scale(direction*scaleX,scaleY);ctx.imageSmoothingEnabled=false;
+    if(e.hit>0){ctx.globalAlpha=.65;ctx.fillStyle="#ff5575";ctx.beginPath();ctx.arc(0,-e.h/2,42,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
+    if(policeSprite.complete&&policeSprite.naturalWidth)ctx.drawImage(policeSprite,380,145,545,955,-e.w/2,-e.h,e.w,e.h);
+    else{ctx.fillStyle="#173c72";ctx.fillRect(-e.w/2,-e.h*.72,e.w,e.h*.72);ctx.fillStyle="#e4a374";ctx.beginPath();ctx.arc(0,-e.h*.84,e.w*.28,0,Math.PI*2);ctx.fill();}
+    ctx.restore();
+  }
+};
+
+const drawBlocksBeforeFeatures=drawBlocks;
+drawBlocks=function(){drawBanks();drawBlocksBeforeFeatures();};
+const drawBoxesBeforeFeatures=drawBoxes;
+drawBoxes=function(){drawBoxesBeforeFeatures();drawHelpItems();};
+const drawPlayerBeforeFeatures=drawPlayer;
+drawPlayer=function(){
+  if(!p.hidden)drawPlayerBeforeFeatures();
+  drawFeatureOverlay();
+};
+
+function drawFeatureOverlay(){
+  const alarmActive=banks.some(bank=>bank.alarmTimer>0);
+  if(alarmActive&&Math.floor(time*5)%2===0){ctx.strokeStyle="rgba(255,55,85,.58)";ctx.lineWidth=6;ctx.strokeRect(3,3,innerWidth-6,innerHeight-6);}
+  if(statusTimer<=0||!statusMessage)return;
+  ctx.save();ctx.font="900 13px 'Courier New'";const width=Math.min(innerWidth-28,Math.max(220,ctx.measureText(statusMessage).width+34));const x=(innerWidth-width)/2,y=innerWidth<620?142:82;
+  ctx.fillStyle="rgba(5,23,30,.94)";ctx.fillRect(x,y,width,38);ctx.strokeStyle="#ffd45c";ctx.lineWidth=2;ctx.strokeRect(x,y,width,38);ctx.fillStyle="#fff";ctx.textAlign="center";ctx.fillText(statusMessage,innerWidth/2,y+24);ctx.textAlign="left";ctx.restore();
+}
+
+function enterBank(bank){
+  if(!bank||bank.visited||bankVisit)return;
+  bankVisit={bank,timer:1.65};p.hidden=false;p.vx=0;p.vy=0;interactButton.hidden=true;
+  showStatus("ANGELINA ENTRÓ AL BANCO…",1.6);
+}
+
+function exitBank(){
+  const bank=bankVisit.bank;bankVisit=null;bank.visited=true;bank.alarm=true;bank.alarmTimer=10;
+  p.hidden=false;p.x=bank.x+bank.w*.5+58;p.y=ground()-p.h;p.vx=0;p.vy=0;p.inv=Math.max(p.inv,2);jumpsUsed=0;
+  gameScore+=600;collectedSpecials++;showStatus("¡ALARMA! LA POLICÍA VIENE EN CAMINO",4.2);triggerAlarmSound();
+  pendingPolice.push(
+    {delay:.8,x:Math.max(120,p.x-620)},
+    {delay:2.6,x:Math.min(world.length-180,p.x+760)},
+    {delay:4.7,x:Math.max(120,p.x-940)}
+  );
+}
+
+function spawnPolice(x){
+  bad.push({x,y:ground()-148,w:82,h:148,hp:2,dead:false,cool:0,hit:0,police:true});
+  burst(x+32,ground()-70,"#63c9ff",14);
+}
+
+function triggerAlarmSound(){
+  try{
+    const AudioEngine=window.AudioContext||window.webkitAudioContext;if(!AudioEngine)return;
+    const audio=new AudioEngine(),start=audio.currentTime;
+    for(let i=0;i<6;i++){
+      const oscillator=audio.createOscillator(),gain=audio.createGain();oscillator.type="square";oscillator.frequency.value=i%2?520:760;
+      gain.gain.setValueAtTime(.025,start+i*.16);gain.gain.exponentialRampToValueAtTime(.001,start+i*.16+.13);oscillator.connect(gain);gain.connect(audio.destination);oscillator.start(start+i*.16);oscillator.stop(start+i*.16+.14);
+    }
+    setTimeout(()=>audio.close().catch(()=>{}),1500);
+  }catch(error){/* La alarma visual sigue activa si el navegador bloquea audio. */}
+}
+
+function collectHelpItem(item){
+  item.dead=true;collectedSpecials++;gameScore+=250;burst(item.x+17,helpItemY(item)+17,"#fff38a",18);
+  if(item.type==="heart"){p.hp=Math.min(5,p.hp+1);showStatus("CORAZÓN: VIDA RECUPERADA");}
+  else if(item.type==="shield"){p.inv=Math.max(p.inv,5);showStatus("ESCUDO: 5 SEGUNDOS DE PROTECCIÓN");}
+  else{p.fly=100;showStatus("BATERÍA: ENERGÍA AL MÁXIMO");}
+}
+
+const updateBeforeFeatures=update;
+update=function(dt){
+  if(paused){updateBeforeFeatures(dt);return;}
+  statusTimer=Math.max(0,statusTimer-dt);
+  for(const bank of banks)bank.alarmTimer=Math.max(0,bank.alarmTimer-dt);
+
+  if(bankVisit){
+    syncWorldGround();const door=bankDoor(bankVisit.bank);p.x=door.x+door.w/2-p.w/2;p.y=ground()-p.h;p.vx=0;p.vy=0;
+    bankVisit.timer-=dt;if(bankVisit.timer<=0)exitBank();updateHudEnhanced();return;
+  }
+
+  nearbyBank=getNearbyBank();interactButton.hidden=!nearbyBank;
+  const wantsInteraction=!!(keys["e"]||keys["arrowdown"]);
+  if(wantsInteraction&&!interactionLatch&&nearbyBank){interactionLatch=true;enterBank(nearbyBank);return;}
+  interactionLatch=wantsInteraction;
+
+  updateBeforeFeatures(dt);
+  if(!playing)return;
+
+  nearbyBank=getNearbyBank();interactButton.hidden=!nearbyBank;
+  for(const item of helpItems){
+    if(item.dead)continue;item.y=helpItemY(item);
+    if(hit(p,item))collectHelpItem(item);
+  }
+  for(const arrival of pendingPolice)arrival.delay-=dt;
+  for(const arrival of pendingPolice)if(!arrival.spawned&&arrival.delay<=0){arrival.spawned=true;spawnPolice(arrival.x);}
+  pendingPolice=pendingPolice.filter(arrival=>!arrival.spawned);
+  updateHudEnhanced();
+};
+
+interactButton.addEventListener("pointerdown",event=>{
+  event.preventDefault();nearbyBank=getNearbyBank();if(nearbyBank)enterBank(nearbyBank);
+});
+
+// Escenario de verificación local: ?play=1&banktest=1.
+if(new URLSearchParams(location.search).has("banktest")){
+  setTimeout(()=>{
+    if(!banks.length)restart();
+    if(!playing||!banks.length)return;
+    const bank=banks[0];p.x=bank.x+bank.w/2-p.w/2;world.camera=Math.max(0,p.x-innerWidth*.38);enterBank(bank);
+  },360);
+  setTimeout(()=>{
+    if(bankVisit)exitBank();
+    for(const arrival of pendingPolice.slice(0,2))spawnPolice(arrival.x);
+    pendingPolice=[];
+    if(mobileObstacles[0])mobileObstacles[0].x=p.x+innerWidth*.55;
+  },900);
+}
+
+
+
+
+// ================================================================
+// ACTUALIZACIÓN: PLAZA 28 DE NOCHE + MÁS PELIGROS URBANOS
+// ================================================================
+// Cielo nocturno, luna, estrellas y faroles encendidos.
+const cityBeforeNight = city;
+const nightStars = Array.from({length:95},(_,i)=>({
+  x:(i*137+31)%1600, y:12+((i*71+19)%Math.max(100,Math.floor(innerHeight*.48))),
+  r:i%9===0?2:1, phase:i*.7
+}));
+city = function(){
+  cityBeforeNight();
+  const W=innerWidth,H=innerHeight;
+  const journeyProgress=Math.min(1,Math.max(0,(p.x||0)/Math.max(1,world.length-260)));
+  const finalLevel=journeyProgress>=2/3;
+  // El nivel 3 usa la imagen real del instituto como escenario completo.
+  if(finalLevel&&institutoFinal.complete&&institutoFinal.naturalWidth){
+    const sceneH=Math.max(1,ground()+2);
+    const scale=Math.max(W/institutoFinal.naturalWidth,sceneH/institutoFinal.naturalHeight);
+    const dw=institutoFinal.naturalWidth*scale,dh=institutoFinal.naturalHeight*scale;
+    ctx.save();ctx.imageSmoothingEnabled=false;
+    ctx.fillStyle="#93d8ef";ctx.fillRect(0,0,W,H);
+    ctx.drawImage(institutoFinal,(W-dw)/2,sceneH-dh,dw,dh);
+    ctx.fillStyle="rgba(37,47,54,.76)";ctx.fillRect(0,ground()-2,W,H-ground()+2);
+    ctx.fillStyle="#f4cf50";
+    const finalStripe=-(world.camera*.8)%110;
+    for(let x=finalStripe-110;x<W+110;x+=110)ctx.fillRect(Math.round(x),H-43,54,5);
+    ctx.restore();
+  }
+  // Huecos negros abiertos en la pista, con bordes rotos y agua nocturna.
+  for(const pit of pitHoles){
+    const x=Math.round(pit.x-world.camera), y=ground()-2;
+    if(x+pit.w<-20||x>W+20)continue;
+    ctx.save();
+    ctx.fillStyle="rgba(3,5,13,.98)";ctx.fillRect(x,y,pit.w,Math.max(0,H-y));
+    ctx.fillStyle="#252a35";ctx.fillRect(x-5,y-5,pit.w+10,7);
+    ctx.fillStyle="#080b15";ctx.fillRect(x+7,y+5,Math.max(0,pit.w-14),Math.max(0,H-y-5));
+    ctx.fillStyle="rgba(64,173,205,.55)";ctx.fillRect(x+18,y+28,Math.max(0,pit.w-36),3);
+    ctx.fillStyle="#a6b0c2";
+    for(let k=0;k<4;k++){const cx=x+(k%2?pit.w-7:7),cy=y+(k<2?3:12);ctx.fillRect(cx,cy,7,3);}
+    ctx.strokeStyle="#f3c96b";ctx.lineWidth=2;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(x-3,y-9);ctx.lineTo(x+pit.w+3,y-9);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#fff1ad";ctx.font="bold 11px monospace";ctx.textAlign="center";ctx.fillText("¡SALTA!",x+pit.w/2,y-17);ctx.textAlign="left";ctx.restore();
+  }
+  // Primera mitad del recorrido: día en la Plaza 28. La segunda mitad será la noche final.
+  if(finalLevel){
+    ctx.save();
+    ctx.fillStyle='rgba(7,35,95,.88)';ctx.fillRect(W/2-151,14,302,29);
+    ctx.strokeStyle='#ffd85a';ctx.strokeRect(W/2-151,14,302,29);
+    ctx.fillStyle='#fff';ctx.font='bold 12px monospace';ctx.textAlign='center';
+    ctx.fillText('NIVEL 3 - INSTITUTO PEDRO A. DEL AGUILA',W/2,33);
+    ctx.textAlign='left';ctx.restore();
+    return;
+  }
+  if(journeyProgress<1/3){
+    ctx.save();
+    const sunX=W-105,sunY=95;
+    ctx.shadowColor='#ffe58a';ctx.shadowBlur=22;ctx.fillStyle='#ffe58a';
+    ctx.beginPath();ctx.arc(sunX,sunY,27,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+    ctx.fillStyle='#fff3b0';ctx.fillRect(sunX-3,sunY-38,6,12);ctx.fillRect(sunX-3,sunY+26,6,12);
+    ctx.fillRect(sunX-38,sunY-3,12,6);ctx.fillRect(sunX+26,sunY-3,12,6);
+    for(let i=0;i<3;i++){
+      const cx=((i*W*.39-world.camera*.10)%(W+180)+W+180)%(W+180)-50;
+      const cy=75+(i%2)*45;
+      ctx.fillStyle='rgba(255,255,255,.72)';ctx.fillRect(cx,cy,66,13);ctx.fillRect(cx+13,cy-9,30,14);ctx.fillRect(cx+39,cy-5,18,10);
+    }
+    ctx.fillStyle='rgba(9,45,49,.82)';ctx.fillRect(W/2-83,14,166,27);
+    ctx.strokeStyle='rgba(255,255,255,.7)';ctx.strokeRect(W/2-83,14,166,27);
+    ctx.fillStyle='#fff8df';ctx.font='bold 12px monospace';ctx.textAlign='center';ctx.fillText('NIVEL 1 · DÍA',W/2,32);ctx.textAlign='left';
+    ctx.restore();
+    return;
+  }
+  // Segundo nivel: noche con luna, estrellas y faroles.
+  ctx.fillStyle='rgba(5, 9, 35, .69)';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='rgba(8,22,49,.82)';ctx.fillRect(W/2-92,14,184,27);
+  ctx.strokeStyle='rgba(255,255,255,.55)';ctx.strokeRect(W/2-92,14,184,27);
+  ctx.fillStyle='#fff1ad';ctx.font='bold 12px monospace';ctx.textAlign='center';ctx.fillText('NIVEL 2 · NOCHE',W/2,32);ctx.textAlign='left';
+  // Estrellas que se desplazan levemente con la cámara.
+  for(const s of nightStars){
+    const x=((s.x-world.camera*.08)%(W+20)+W+20)%(W+20);
+    ctx.globalAlpha=.55+.4*(.5+.5*Math.sin(time*2+s.phase));
+    ctx.fillStyle='#e5f4ff';ctx.fillRect(Math.round(x),s.y,s.r,s.r);
+  }
+  ctx.globalAlpha=1;
+  // Luna creciente sencilla.
+  ctx.save();ctx.shadowColor='#fff1ad';ctx.shadowBlur=24;
+  ctx.fillStyle='#fff0b0';ctx.beginPath();ctx.arc(W*.79,Math.max(75,H*.17),29,0,Math.PI*2);ctx.fill();
+  ctx.shadowBlur=0;ctx.fillStyle='#182143';ctx.beginPath();ctx.arc(W*.79+12,Math.max(75,H*.17)-9,26,0,Math.PI*2);ctx.fill();ctx.restore();
+  // Reflejos de faroles cálidos a lo largo de la avenida.
+  const offset=-(world.camera*.75)%160;
+  for(let x=offset-100;x<W+160;x+=160){
+    const lx=x+64,ly=H-338;
+    const glow=ctx.createRadialGradient(lx,ly,3,lx,ly,72);
+    glow.addColorStop(0,'rgba(255,220,112,.25)');glow.addColorStop(1,'rgba(255,220,112,0)');
+    ctx.fillStyle=glow;ctx.beginPath();ctx.arc(lx,ly,72,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ffe8a0';ctx.fillRect(lx-4,ly-5,8,8);
+  }
+  // Pequeños destellos en ventanas de los edificios de la plaza.
+  for(let i=0;i<14;i++){
+    const x=((i*113-world.camera*.18)%(W+60)+W+60)%(W+60);
+    const y=H-255-(i%4)*32;
+    ctx.fillStyle=i%3===0?'rgba(255,211,102,.7)':'rgba(130,215,255,.42)';
+    ctx.fillRect(Math.round(x),y,5,8);
+  }
+};
+
+const buildBeforeMoreHazards = build;
+build = function(){
+  buildBeforeMoreHazards();
+  // Más cajas y barreras, repartidas por el recorrido.
+  for(const x of [1650,3650,5750,7450])
+    boxes.push({x,y:ground()-52,w:48,h:48});
+  // Más perseguidores para aumentar la dificultad gradualmente.
+  // Más motos atravesando la avenida durante la noche.
+};
+
+</script>
+
+<script>
+// VERSIÓN 3: destino final en el Instituto Pedro A. del Águila Hidalgo.
+const institutoFinal = new Image();
+institutoFinal.src = "assets/instituto-pixel.png";
+drawHouse = function(){
+  const x = world.length - 760 - world.camera;
+  const y = ground() - 390;
+  if (x > innerWidth + 40 || x < -760) return;
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(institutoFinal, x, y, 700, 388);
+  // Letrero de llegada del videojuego.
+  ctx.fillStyle = "rgba(7,35,95,.94)";
+  ctx.fillRect(x + 65, y + 320, 570, 54);
+  ctx.strokeStyle = "#ffd85a"; ctx.lineWidth = 4;
+  ctx.strokeRect(x + 65, y + 320, 570, 54);
+  ctx.fillStyle = "#fff"; ctx.textAlign = "center";
+  ctx.font = "bold 17px Arial";
+  ctx.fillText("¡META! · INSTITUTO PEDRO A. DEL ÁGUILA HIDALGO", x + 350, y + 353);
+  ctx.textAlign = "left";
+  ctx.restore();
+};
+// La imagen del instituto ya es el fondo; al final solo se dibuja el arco de meta.
+drawHouse = function(){
+  const x=world.length-360-world.camera,y=ground()-205;
+  if(x>innerWidth+80||x<-280)return;
+  ctx.save();ctx.imageSmoothingEnabled=false;
+  ctx.fillStyle="#173d70";ctx.fillRect(x+24,y+62,18,143);ctx.fillRect(x+194,y+62,18,143);
+  ctx.fillStyle="#ffd85a";ctx.fillRect(x+15,y+45,206,58);
+  ctx.fillStyle="#0b2a52";ctx.fillRect(x+21,y+51,194,46);
+  ctx.fillStyle="#fff";ctx.textAlign="center";ctx.font="bold 22px Arial";
+  ctx.fillText("META",x+118,y+82);
+  ctx.textAlign="left";ctx.restore();
+};
+win = function(){
+  playing = false;
+  document.getElementById("intro").style.display = "flex";
+  document.getElementById("box").innerHTML =
+    "<h1>¡LO LOGRASTE! 🏆</h1>" +
+    "<p>¡Angelina llegó al Instituto de Educación Superior Tecnológico Público Pedro A. del Águila Hidalgo!</p>" +
+    "<p>Terminaste la aventura de <strong>Entre el Sol y la Luna · Versión 3</strong> y reuniste " + cash + " billetes.</p>" +
+    "<button onclick='restart()'>JUGAR DE NUEVO</button>";
+};
+</script>
+<script>
+// Metas intermedias: cada arco marca el cierre real de un nivel.
+const drawFinalGoalBeforeCheckpoints=drawHouse;
+function drawCheckpointGoal(center,label){
+  const x=center-world.camera,y=ground()-205;
+  if(x<-180||x>innerWidth+180)return;
+  ctx.save();ctx.imageSmoothingEnabled=false;
+  ctx.fillStyle="#0d315f";ctx.fillRect(x-103,y+62,18,143);ctx.fillRect(x+85,y+62,18,143);
+  ctx.fillStyle="#ffd85a";ctx.fillRect(x-116,y+35,232,72);
+  ctx.fillStyle="#08264b";ctx.fillRect(x-109,y+42,218,58);
+  ctx.fillStyle="#fff";ctx.textAlign="center";ctx.font="bold 18px Arial";ctx.fillText(label,x,y+67);
+  ctx.fillStyle="#9ee8ff";ctx.font="bold 11px monospace";ctx.fillText("SIGUIENTE NIVEL",x,y+88);
+  ctx.textAlign="left";ctx.restore();
+}
+drawHouse=function(){
+  drawCheckpointGoal(world.length/3,"META NIVEL 1");
+  drawCheckpointGoal(world.length*2/3,"META NIVEL 2");
+  drawFinalGoalBeforeCheckpoints();
+};
+
+// Ajuste final de jugabilidad: tres tramos largos con obstaculos separados.
+const buildBeforeComfortSpacing=build;
+build=function(){
+  buildBeforeComfortSpacing();
+  streetHazards=[];
+  const levelSpan=world.length/3;
+  const atLevel=(level,offsets)=>offsets.map(offset=>level*levelSpan+offset);
+
+  // Entre once y doce retos por nivel: conos/barreras, policias, patrulleros y huecos.
+  // El primer tramo deja libres las entradas de los edificios existentes.
+  blocks=[
+    ...atLevel(0,[700,1900,3400,5500,7700]),
+    ...atLevel(1,[700,2650,4600,6550]),
+    ...atLevel(2,[700,2650,4600,6550])
+  ].map(x=>({x,y:ground()-62,w:82,h:62}));
+  bad=[
+    ...atLevel(0,[1350,4650,7350]),
+    ...atLevel(1,[1350,3950,7200]),
+    ...atLevel(2,[1350,3950,7200])
+  ].map(x=>({x,y:ground()-148,w:82,h:148,hp:3,dead:false,cool:0,hit:0,police:true}));
+
+  const carPlan=[
+    [0,2750,-72],[0,6150,-76],
+    [1,2000,-84],[1,5250,-88],
+    [2,2000,-96],[2,5250,-102]
+  ];
+  mobileObstacles=carPlan.map(([level,offset,vx])=>{
+    const x=level*levelSpan+offset;
+    return {x,spawnX:x,w:220,h:96,vx,cool:0,passed:false,active:false};
+  });
+  pitHoles=[
+    ...atLevel(0,[4050,6800]),
+    ...atLevel(1,[3300,5900]),
+    ...atLevel(2,[3300,5900])
+  ].map(x=>({x,w:132,depth:24}));
+  const obstacleZones=[...blocks,...bad,...mobileObstacles,...pitHoles];
+  boxes=boxes.filter(box=>!obstacleZones.some(obstacle=>box.x+box.w>obstacle.x-170&&box.x<obstacle.x+(obstacle.w||80)+170));
+  // Ayudas repartidas durante todo el recorrido para equilibrar la mayor duracion.
+  const helpPlan=[
+    [1050,"heart",180],[2300,"shield",235],[5100,"energy",195],[7100,"heart",220],
+    [8750,"shield",210],[10400,"energy",190],[12400,"heart",230],[14800,"shield",200],
+    [16900,"energy",190],[18700,"heart",225],[20700,"shield",205],[22900,"energy",190]
+  ];
+  helpItems=helpPlan.map(([x,type,offset],index)=>({x,y:0,w:34,h:34,type,offset,phase:index*.72,dead:false}));
+};
+</script>
+<script>
+// Sonidos sintetizados: no requieren archivos externos y mantienen el juego independiente.
+const GameSound=(()=>{
+  let audio=null;
+  function unlock(){
+    const AudioEngine=window.AudioContext||window.webkitAudioContext;
+    if(!AudioEngine)return null;
+    if(!audio)audio=new AudioEngine();
+    if(audio.state==="suspended")audio.resume().catch(()=>{});
+    return audio;
+  }
+  function tone(frequency,duration=.1,type="square",volume=.035,delay=0){
+    const engine=unlock();if(!engine)return;
+    const start=engine.currentTime+delay,oscillator=engine.createOscillator(),gain=engine.createGain();
+    oscillator.type=type;oscillator.frequency.setValueAtTime(frequency,start);
+    gain.gain.setValueAtTime(Math.max(.001,volume),start);
+    gain.gain.exponentialRampToValueAtTime(.001,start+duration);
+    oscillator.connect(gain);gain.connect(engine.destination);
+    oscillator.start(start);oscillator.stop(start+duration+.02);
+  }
+  return {
+    unlock,
+    start(){tone(330,.09,"square",.035);tone(494,.11,"square",.035,.1);tone(659,.18,"square",.04,.21);},
+    jump(){tone(240,.08,"sine",.035);tone(420,.11,"sine",.03,.05);},
+    attack(){tone(170,.07,"sawtooth",.026);tone(95,.09,"square",.022,.05);},
+    collect(){tone(660,.07,"square",.03);tone(880,.12,"square",.03,.07);},
+    help(){tone(523,.08,"sine",.035);tone(659,.08,"sine",.035,.08);tone(784,.16,"sine",.04,.16);},
+    hurt(){tone(150,.13,"sawtooth",.045);tone(90,.18,"square",.035,.08);},
+    level(){tone(392,.08,"square",.035);tone(523,.08,"square",.035,.1);tone(659,.08,"square",.035,.2);tone(784,.2,"square",.04,.3);},
+    lose(){tone(260,.14,"triangle",.04);tone(195,.16,"triangle",.04,.15);tone(130,.3,"triangle",.04,.31);},
+    win(){tone(523,.1,"square",.035);tone(659,.1,"square",.035,.12);tone(784,.1,"square",.035,.24);tone(1047,.32,"square",.045,.36);}
+  };
+})();
+
+document.addEventListener("pointerdown",event=>{
+  GameSound.unlock();
+  const key=event.target.closest("[data-key]")?.dataset.key;
+  if(playing&&key===" ")GameSound.jump();
+},{capture:true});
+document.addEventListener("keydown",event=>{
+  GameSound.unlock();
+  if(playing&&!event.repeat&&[" ","arrowup","w"].includes(event.key.toLowerCase()))GameSound.jump();
+},{capture:true});
+
+const attackWithSound=attack;
+attack=function(){const ready=p.attack<=0;attackWithSound();if(ready)GameSound.attack();};
+
+const collectHelpItemWithSound=collectHelpItem;
+collectHelpItem=function(item){collectHelpItemWithSound(item);GameSound.help();};
+
+const updateWithSound=update;
+update=function(dt){
+  const hpBefore=p.hp,cashBefore=cash,levelBefore=gameLevel;
+  updateWithSound(dt);
+  if(p.hp<hpBefore)GameSound.hurt();
+  if(cash>cashBefore)GameSound.collect();
+  if(gameLevel>levelBefore)GameSound.level();
+};
+
+const loseWithSound=lose;
+lose=function(){GameSound.lose();loseWithSound();};
+const winWithSound=win;
+win=function(){GameSound.win();winWithSound();};
+const restartWithSound=restart;
+restart=function(){GameSound.start();restartWithSound();};
+document.getElementById("go").onclick=restart;
+</script>
+</body>
+</html>
